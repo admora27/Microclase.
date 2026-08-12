@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microclase interactiva · Educación y Espacios No Convencionales</title>
+<style>
+/* ====== ESCALA DE COLORES INSTITUCIONAL ====== */
+:root{
+  /* paleta solicitada */
+  --sky-reflection:#74b3ceff;
+  --pacific-cyan:#508991ff;
+  --deep-space-blue:#172a3aff;
+  --dark-teal:#004346ff;
+  --mint-leaf:#09bc8aff;
+  /* tonos derivados de la misma paleta */
+  --claro:#E4F1F7; --osc:#0E1B26; --medio:#12222E;
+  --teal-osc:#00292B; --cyan-osc:#3B6C73; --sky-osc:#4E93AE;
+  --verde-claro:#B8F2DF; --amarillo-claro:#FBE9A7; --ambar:#E0B84A;
+  /* alias por rol, usados en el resto de la hoja */
+  --color1:var(--claro); --color2:var(--sky-reflection); --color3:var(--pacific-cyan);
+  --color4:var(--dark-teal); --color5:var(--deep-space-blue);
+  --tinta:#172A3A; --sombra:0 8px 0 rgba(8,17,26,.35);
+  --display:'Trebuchet MS','Segoe UI',Impact,system-ui,sans-serif;
+  --body:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+/* clases utilitarias de la escala */
+.sky-reflection{color:#74b3ceff;}
+.pacific-cyan{color:#508991ff;}
+.deep-space-blue{color:#172a3aff;}
+.dark-teal{color:#004346ff;}
+.mint-leaf{color:#09bc8aff;}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--body);color:var(--color1);min-height:100vh;overflow-x:hidden;
+  background:
+    radial-gradient(circle at 15% 10%, #004346 0%, transparent 48%),
+    radial-gradient(circle at 85% 85%, #508991 0%, transparent 45%),
+    linear-gradient(160deg,#172A3A 0%,#12222E 60%,#0E1B26 100%);
+  background-attachment:fixed;
+}
+/* ---------- barra superior ---------- */
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:10px 16px;background:rgba(14,27,38,.93);border-bottom:3px solid rgba(228,241,247,.18)}
+.marca{font-family:var(--display);font-weight:900;font-size:15px;color:var(--color2);white-space:nowrap}
+.pasos{display:flex;gap:6px;flex:1;flex-wrap:wrap}
+.paso{font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:20px;background:rgba(228,241,247,.12);
+  color:rgba(228,241,247,.72);cursor:pointer;border:2px solid transparent;transition:.2s;white-space:nowrap;font-family:var(--body)}
+.paso:hover{background:rgba(228,241,247,.26);color:var(--color1)}
+.paso.on{background:var(--color2);color:var(--color5);border-color:var(--color1)}
+.audio-btn{background:rgba(228,241,247,.14);border:2px solid rgba(228,241,247,.3);color:var(--color1);
+  width:44px;height:38px;border-radius:12px;cursor:pointer;font-size:16px}
+.audio-btn:hover{background:var(--color2);color:var(--color5)}
+.audio-btn.off{opacity:.45}
+/* ---------- estructura ---------- */
+main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:26px 18px 96px}
+.pantalla{display:none}
+.pantalla.activa{display:block;animation:entra .4s ease-out}
+@keyframes entra{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.eyebrow{display:inline-block;font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;
+  background:var(--color2);color:var(--color5);padding:6px 14px;border-radius:30px;margin-bottom:14px;box-shadow:0 4px 0 rgba(8,17,26,.3)}
+h1{font-family:var(--display);font-size:clamp(32px,6vw,60px);line-height:1.05;text-shadow:0 6px 0 rgba(8,17,26,.42);text-transform:uppercase}
+h2{font-family:var(--display);font-size:clamp(23px,4vw,38px);line-height:1.12;margin-bottom:10px;text-shadow:0 5px 0 rgba(8,17,26,.4)}
+h3{font-size:19px;font-weight:800;margin-bottom:6px}
+p.lead{font-size:clamp(15px,2vw,18px);opacity:.95;max-width:72ch;line-height:1.55}
+.btn{font-family:var(--body);font-weight:900;font-size:16px;background:var(--color4);color:var(--color1);border:none;
+  border-radius:16px;padding:15px 30px;cursor:pointer;box-shadow:var(--sombra);transition:transform .12s,filter .2s}
+.btn:hover{filter:brightness(1.14)}
+.btn:active{transform:translateY(6px);box-shadow:0 2px 0 rgba(8,17,26,.3)}
+.btn.amarillo{background:var(--color2);color:var(--color5)}
+.btn.azul{background:var(--color3);color:var(--color5)}
+.btn.hueco{background:rgba(228,241,247,.10);border:3px solid rgba(228,241,247,.38);box-shadow:none;color:var(--color1)}
+.fila{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:22px}
+.tarjeta{background:rgba(228,241,247,.08);border:2px solid rgba(228,241,247,.2);border-radius:22px;padding:20px}
+/* ---------- portada institucional ---------- */
+.portada{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px}
+.membrete{width:100%;background:var(--color1);color:var(--color5);border:3px solid var(--color2);
+  border-radius:22px;padding:22px 26px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;
+  align-items:start;box-shadow:0 16px 36px rgba(8,17,26,.45)}
+.membrete img{display:block;height:auto;image-rendering:auto}
+.membrete .logo-upel{width:clamp(48px,6vw,74px);margin-top:2px}
+.membrete .logo-impm{width:clamp(56px,7vw,88px)}
+.membrete-texto{font-family:Georgia,'Times New Roman',Times,serif;text-align:center}
+.membrete-texto p{font-weight:700;margin:0}
+.membrete-texto .l1{font-size:clamp(11px,1.75vw,20px);text-transform:uppercase;letter-spacing:.4px;line-height:1.55}
+.membrete-texto .l2{font-size:clamp(10.5px,1.5vw,17px);line-height:1.6;margin-top:8px}
+.membrete-texto .l2:last-child{margin-top:2px}
+.titulo-micro{font-family:var(--display);font-weight:900;text-transform:uppercase;line-height:.92;
+  font-size:clamp(56px,14vw,158px);letter-spacing:clamp(2px,1.1vw,14px);margin:26px 0 0;
+  color:var(--color1);text-shadow:0 8px 0 rgba(8,17,26,.45),0 0 46px rgba(116,179,206,.35)}
+.regla{width:min(420px,80%);height:6px;border-radius:6px;margin:16px auto 4px;
+  background:linear-gradient(90deg,transparent,var(--color3),var(--color2),var(--color3),transparent)}
+.subtitulo-portada{font-family:var(--display);font-weight:900;text-transform:uppercase;color:var(--color2);
+  font-size:clamp(19px,3.4vw,34px);letter-spacing:1px;line-height:1.15}
+.portada .lead{margin:14px auto 0}
+.escena{width:min(560px,100%);margin:24px auto 0;border-radius:26px;overflow:hidden;
+  box-shadow:0 18px 40px rgba(8,17,26,.5);border:4px solid rgba(228,241,247,.25)}
+.escena svg{display:block;width:100%;height:auto}
+.pill-fila{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+.pill{font-size:12px;font-weight:700;padding:7px 13px;border-radius:20px;background:rgba(228,241,247,.13);border:1px solid rgba(228,241,247,.26)}
+.portada .fila{justify-content:center}
+.participantes{width:100%;margin-top:30px;background:rgba(228,241,247,.08);border:2px solid rgba(228,241,247,.2);
+  border-top:5px solid var(--mint-leaf);border-radius:20px;padding:20px 22px}
+.lista-part{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px 18px;margin-top:6px}
+.lista-part span{font-size:14px;font-weight:700;line-height:1.4}
+.lista-part b{display:block;font-family:var(--display);font-size:15.5px;letter-spacing:.4px}
+.lista-part i{font-style:normal;font-size:12.5px;font-weight:600;opacity:.8}
+.fecha{margin-top:16px;font-size:13px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.85}
+@media (max-width:640px){
+  .membrete{grid-template-columns:1fr;justify-items:center;gap:12px;padding:18px 16px}
+  .membrete .logo-upel{grid-row:1}
+  .membrete .logo-impm{grid-row:1}
+  .membrete-texto{grid-row:2}
+}
+/* ---------- nube ---------- */
+.nube{position:relative;min-height:300px;border-radius:24px;margin-top:18px;background:rgba(14,27,38,.45);
+  border:3px dashed rgba(228,241,247,.26);display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 18px;padding:24px}
+.palabra{font-weight:900;display:inline-block;animation:pop .45s ease-out;text-shadow:0 3px 0 rgba(8,17,26,.4);line-height:1.15}
+@keyframes pop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
+.entrada{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+input[type=text],textarea{font-family:var(--body);font-size:16px;padding:13px 17px;border-radius:14px;
+  border:3px solid rgba(228,241,247,.35);background:var(--color1);color:var(--tinta);font-weight:600;flex:1;min-width:210px}
+input[type=text]:focus,textarea:focus{outline:4px solid var(--color3)}
+.aclara{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px;margin-top:22px}
+.aclara .tarjeta{border-left:8px solid var(--color3)}
+.aclara .tarjeta.ok{border-left-color:var(--mint-leaf)}
+.mini{font-size:11.5px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;opacity:.8;display:block;margin-bottom:6px}
+/* ---------- infografía ---------- */
+.modulos{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;margin-top:22px}
+.modulo{border-radius:24px;padding:20px;cursor:pointer;position:relative;border:3px solid rgba(228,241,247,.24);
+  box-shadow:0 10px 0 rgba(8,17,26,.3);transition:transform .2s;text-align:left}
+.modulo:hover{transform:translateY(-6px)}
+.modulo.m1{background:linear-gradient(150deg,#004346,#00292B);color:var(--color1)}
+.modulo.m2{background:linear-gradient(150deg,#74B3CE,#4E93AE);color:var(--color5)}
+.modulo.m3{background:linear-gradient(150deg,#09BC8A,#06A276);color:var(--color5)}
+.modulo.m4{background:linear-gradient(150deg,#172A3A,#0E1B26);color:var(--color1)}
+.modulo .num{font-family:var(--display);font-weight:900;font-size:12.5px;opacity:.85;letter-spacing:1px}
+.modulo h3{font-family:var(--display);font-size:20px;margin:6px 0 10px;text-transform:uppercase}
+.modulo .icono{width:70px;height:70px;margin-bottom:4px}
+.modulo .detalle{display:none;font-size:14.5px;line-height:1.6;border-top:2px solid rgba(228,241,247,.45);padding-top:12px;margin-top:6px}
+.modulo.m2 .detalle,.modulo.m3 .detalle{border-top-color:rgba(23,42,58,.4)}
+.modulo.abierto .detalle{display:block;animation:entra .3s}
+.modulo .tip{margin-top:10px;background:rgba(8,17,26,.3);border-radius:12px;padding:10px 12px;font-size:13.5px;font-style:italic}
+.modulo.m2 .tip,.modulo.m3 .tip{background:rgba(255,255,255,.42)}
+.toque{position:absolute;top:14px;right:16px;font-size:10.5px;font-weight:900;letter-spacing:1px;opacity:.85}
+/* ---------- cuestionario ---------- */
+.cabeza-quiz{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.contador{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);
+  font-weight:900;font-size:27px;background:var(--color4);color:var(--color1);box-shadow:0 8px 0 rgba(8,17,26,.35);border:4px solid var(--color1)}
+.contador.urgente{background:var(--amarillo-claro);color:var(--deep-space-blue);animation:latir .5s infinite}
+@keyframes latir{50%{transform:scale(1.12)}}
+.marcador{font-family:var(--display);font-weight:900;font-size:20px;background:rgba(8,17,26,.4);padding:10px 18px;
+  border-radius:16px;border:2px solid rgba(228,241,247,.28)}
+.pregunta{background:var(--color1);color:var(--tinta);border-radius:22px;padding:24px;text-align:center;
+  font-size:clamp(17px,2.5vw,26px);font-weight:800;line-height:1.35;box-shadow:0 12px 0 rgba(8,17,26,.35);min-height:110px;display:grid;place-items:center}
+.opciones{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+.opcion{display:flex;align-items:center;gap:14px;text-align:left;font-family:var(--body);font-size:16px;font-weight:700;
+  color:var(--color1);line-height:1.35;border:none;border-radius:18px;padding:18px;cursor:pointer;min-height:100px;
+  box-shadow:var(--sombra);transition:transform .12s,filter .2s}
+.opcion:hover{filter:brightness(1.14)}
+.opcion:active{transform:translateY(5px)}
+.opcion .fig{width:32px;height:32px;flex:none}
+.opcion.o0{background:var(--deep-space-blue);border:2px solid rgba(228,241,247,.3)}
+.opcion.o1{background:var(--dark-teal)}
+.opcion.o2{background:var(--pacific-cyan)}
+.opcion.o3{background:var(--sky-reflection);color:var(--deep-space-blue)}
+/* respuesta correcta: verde claro | respuesta incorrecta: amarillo claro */
+.opcion.correcta{background:var(--verde-claro);color:var(--deep-space-blue);border:2px solid var(--mint-leaf);
+  outline:5px solid var(--mint-leaf);outline-offset:2px;filter:none;animation:latir .45s 2}
+.opcion.incorrecta{background:var(--amarillo-claro);color:var(--deep-space-blue);border:2px solid var(--ambar);filter:none}
+.opcion.elegida{outline:5px solid var(--ambar);outline-offset:2px}
+.opcion.correcta .fig > *,.opcion.incorrecta .fig > *{fill:#172A3A}
+.opcion.correcta::after,.opcion.incorrecta::after{margin-left:auto;font-family:var(--display);font-size:24px;font-weight:900}
+.opcion.correcta::after{content:"\2713";color:#06805F}
+.opcion.incorrecta::after{content:"\2715";color:#9A6B00}
+.veredicto{margin-top:18px;border-radius:20px;padding:20px;font-size:15.5px;line-height:1.6;border:3px solid rgba(228,241,247,.32);display:none}
+.veredicto.ver{display:block;animation:entra .3s}
+.veredicto.bien{background:var(--verde-claro);color:var(--deep-space-blue);border-color:var(--mint-leaf)}
+.veredicto.mal{background:var(--amarillo-claro);color:var(--deep-space-blue);border-color:var(--ambar)}
+.veredicto strong{font-family:var(--display);font-size:19px;display:block;margin-bottom:6px}
+.barra-progreso{height:12px;background:rgba(8,17,26,.45);border-radius:20px;overflow:hidden;margin-bottom:16px}
+.barra-progreso span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--pacific-cyan),var(--mint-leaf));transition:width .4s}
+.podio{text-align:center}
+.medalla{font-size:92px;line-height:1;animation:flota 2.6s ease-in-out infinite}
+@keyframes flota{50%{transform:translateY(-14px)}}
+/* ---------- mural ---------- */
+.columnas{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:24px;align-items:start}
+.col{position:relative;background:linear-gradient(165deg,rgba(80,137,145,.22),rgba(8,17,26,.42));
+  border-radius:24px;padding:0 20px 20px;border:2px solid rgba(228,241,247,.2);overflow:hidden;
+  box-shadow:0 14px 30px rgba(8,17,26,.4)}
+.col::before{content:"";position:absolute;inset:0 0 auto 0;height:7px;background:var(--mint-leaf)}
+.col.c2::before{background:var(--sky-reflection)}
+.col-cabeza{display:flex;align-items:center;gap:13px;padding:22px 0 12px}
+.col-num{flex:none;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;
+  font-family:var(--display);font-weight:900;font-size:23px;color:var(--deep-space-blue);
+  background:var(--mint-leaf);box-shadow:0 5px 0 rgba(8,17,26,.4)}
+.col.c2 .col-num{background:var(--sky-reflection)}
+.col h3{font-family:var(--display);font-weight:900;font-size:clamp(15px,1.7vw,19px);text-transform:uppercase;
+  letter-spacing:.8px;line-height:1.2;margin:0;text-shadow:0 3px 0 rgba(8,17,26,.4)}
+.col h3 small{display:block;font-family:var(--body);font-size:11px;font-weight:800;letter-spacing:2px;
+  opacity:.72;margin-bottom:3px}
+.consigna{font-size:13.5px;opacity:.92;margin:0 0 16px;line-height:1.6;
+  border-left:3px solid rgba(228,241,247,.3);padding-left:12px}
+.notas{display:flex;flex-direction:column;gap:13px}
+.nota{position:relative;color:var(--deep-space-blue);background:var(--claro);border-radius:16px;
+  padding:14px 16px 14px 20px;font-size:14.5px;font-weight:600;line-height:1.55;
+  box-shadow:0 8px 18px rgba(8,17,26,.34);animation:pop .35s;transition:transform .18s,box-shadow .18s}
+.nota::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:6px;border-radius:0 6px 6px 0;
+  background:var(--mint-leaf)}
+.col.c2 .nota::before{background:var(--pacific-cyan)}
+.nota:hover{transform:translateY(-4px);box-shadow:0 14px 26px rgba(8,17,26,.45)}
+.nota b{display:block;font-family:var(--display);font-size:11.5px;letter-spacing:1.6px;margin-bottom:6px;
+  text-transform:uppercase;color:var(--dark-teal);opacity:.9}
+.form-nota{display:flex;flex-direction:column;gap:11px;margin-top:18px;padding-top:16px;
+  border-top:2px dashed rgba(228,241,247,.26)}
+.form-nota .etiqueta{font-family:var(--display);font-size:12px;font-weight:900;letter-spacing:2px;
+  text-transform:uppercase;opacity:.8}
+.form-nota .btn{font-family:var(--display);font-size:16px;letter-spacing:1.4px;text-transform:uppercase}
+@media (max-width:640px){.col-num{width:40px;height:40px;font-size:20px}}
+/* ---------- cierre ---------- */
+.cierre-caja{background:linear-gradient(140deg,rgba(116,179,206,.18),rgba(80,137,145,.2));border:3px solid var(--color2);
+  border-radius:26px;padding:28px;margin-top:20px}
+.cita{font-size:clamp(17px,2.3vw,22px);line-height:1.6;font-weight:600}
+.cita span{color:var(--mint-leaf);font-weight:900}
+.subtitulo{font-family:var(--display);font-size:clamp(20px,3vw,28px);text-transform:uppercase;letter-spacing:1px;
+  margin-top:30px;padding-bottom:10px;border-bottom:4px solid var(--mint-leaf);color:var(--color2);
+  text-shadow:0 4px 0 rgba(8,17,26,.35)}
+.subtitulo small{display:block;font-family:var(--body);font-size:13px;font-weight:600;letter-spacing:0;
+  text-transform:none;color:var(--color1);opacity:.85;margin-top:8px;text-shadow:none}
+#confeti{position:fixed;inset:0;pointer-events:none;z-index:99}
+.pie-nav{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;justify-content:space-between;align-items:center;
+  gap:12px;padding:11px 18px;background:rgba(14,27,38,.95);border-top:3px solid rgba(228,241,247,.18)}
+.pie-nav small{opacity:.78;font-size:11.5px;text-align:center;flex:1}
+.nav-btn{font-family:var(--body);font-weight:900;font-size:14px;padding:11px 20px;border-radius:14px;border:none;
+  background:var(--color2);color:var(--color5);cursor:pointer;box-shadow:0 5px 0 rgba(8,17,26,.35)}
+.nav-btn.sec{background:rgba(228,241,247,.16);color:var(--color1)}
+.nav-btn:active{transform:translateY(4px);box-shadow:none}
+@media (max-width:820px){
+  .portada{grid-template-columns:1fr}
+  .opciones{grid-template-columns:1fr}
+  .columnas{grid-template-columns:1fr}
+  .opcion{min-height:76px}
+}
+</style>
+</head>
+<body>
+
+<canvas id="confeti"></canvas>
+
+<div class="topbar">
+  <div class="marca">&#9962; UPEL &middot; IMPM</div>
+  <nav class="pasos" id="pasos"></nav>
+  <button class="audio-btn off" id="btnMusica" title="Musica de fondo">&#9834;</button>
+  <button class="audio-btn" id="btnSfx" title="Efectos de sonido">&#128266;</button>
+</div>
+
+<main>
+
+<!-- ===== 0 · INICIO ===== -->
+<section class="pantalla activa" id="p0">
+  <div class="portada">
+
+    <div class="membrete">
+      <img class="logo-upel" src="data:image/png;base64,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" alt="Logo de la Universidad Pedagógica Experimental Libertador">
+      <div class="membrete-texto">
+        <p class="l1">República Bolivariana de Venezuela</p>
+        <p class="l1">Universidad Pedagógica Experimental Libertador</p>
+        <p class="l1">Instituto de Mejoramiento Profesional del Magisterio</p>
+        <p class="l2">Unidad Curricular: Educación y Espacios No Convencionales</p>
+        <p class="l2">Especialidad: Educación Especial P.S.D.</p>
+      </div>
+      <img class="logo-impm" src="data:image/png;base64,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" alt="Logo del Instituto de Mejoramiento Profesional del Magisterio">
+    </div>
+
+    <h1 class="titulo-micro">Microclase</h1>
+    <div class="regla"></div>
+    <p class="subtitulo-portada">Cuando el aula es un refugio</p>
+    <p class="lead">Prácticas docentes en ambientes no convencionales: refugios post-terremoto en Venezuela y modalidades alternativas para personas con discapacidad.</p>
+
+    <div class="escena">
+      <svg viewBox="0 0 800 640" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Refugio de emergencia convertido en espacio de aprendizaje">
+        <defs>
+          <linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0E1B26"/><stop offset="55%" stop-color="#004346"/><stop offset="100%" stop-color="#508991"/>
+          </linearGradient>
+          <linearGradient id="carpaA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#74B3CE"/><stop offset="100%" stop-color="#508991"/>
+          </linearGradient>
+          <linearGradient id="carpaB" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#74B3CE"/><stop offset="100%" stop-color="#508991"/>
+          </linearGradient>
+          <linearGradient id="suelo" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#172A3A"/><stop offset="100%" stop-color="#0E1B26"/>
+          </linearGradient>
+          <radialGradient id="lampara" cx="50%" cy="50%">
+            <stop offset="0%" stop-color="#E4F1F7" stop-opacity=".95"/><stop offset="100%" stop-color="#74B3CE" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <rect width="800" height="640" fill="url(#cielo)"/>
+        <g fill="#E4F1F7" opacity=".85">
+          <circle cx="70" cy="60" r="2.6"/><circle cx="180" cy="110" r="1.8"/><circle cx="300" cy="48" r="2.2"/>
+          <circle cx="520" cy="80" r="2"/><circle cx="650" cy="40" r="2.8"/><circle cx="730" cy="130" r="1.7"/>
+          <circle cx="420" cy="130" r="1.6"/><circle cx="120" cy="180" r="1.5"/>
+        </g>
+        <circle cx="678" cy="96" r="42" fill="#E4F1F7" opacity=".92"/>
+        <circle cx="660" cy="86" r="34" fill="#004346" opacity=".55"/>
+        <g opacity=".55" fill="#172A3A">
+          <rect x="20" y="300" width="90" height="180"/><rect x="120" y="250" width="70" height="230"/>
+          <rect x="620" y="270" width="80" height="210"/><rect x="710" y="320" width="70" height="160"/>
+        </g>
+        <g stroke="#508991" stroke-width="4" fill="none" opacity=".8">
+          <path d="M150 260 l14 40 -18 26 16 44"/><path d="M660 285 l-16 38 20 30 -12 40"/>
+        </g>
+        <path d="M0 470 Q200 440 400 470 T800 460 L800 640 L0 640 Z" fill="url(#suelo)"/>
+        <path d="M40 640 L120 545 L96 512 L165 470" stroke="#508991" stroke-width="6" fill="none" opacity=".8" stroke-linecap="round"/>
+        <path d="M700 640 L648 560 L678 520" stroke="#508991" stroke-width="5" fill="none" opacity=".7" stroke-linecap="round"/>
+        <g>
+          <path d="M250 470 L400 260 L550 470 Z" fill="url(#carpaA)"/>
+          <path d="M400 260 L400 470 L340 470 L400 350 Z" fill="#172A3A" opacity=".35"/>
+          <path d="M355 470 L400 372 L445 470 Z" fill="#172A3A"/>
+          <path d="M250 470 L550 470" stroke="#004346" stroke-width="7"/>
+          <path d="M400 258 L400 210" stroke="#fff" stroke-width="5"/>
+          <path d="M400 214 L470 232 L400 250 Z" fill="#004346"/>
+        </g>
+        <g>
+          <path d="M560 470 L650 350 L740 470 Z" fill="url(#carpaB)"/>
+          <path d="M650 350 L650 470 L610 470 L650 400 Z" fill="#172A3A" opacity=".4"/>
+          <path d="M560 470 L740 470" stroke="#0E1B26" stroke-width="6"/>
+        </g>
+        <circle cx="196" cy="368" r="86" fill="url(#lampara)"/>
+        <g>
+          <path d="M196 250 L196 296" stroke="#E4F1F7" stroke-width="5"/>
+          <path d="M170 296 L222 296 L212 348 L180 348 Z" fill="#74B3CE" stroke="#004346" stroke-width="4"/>
+          <rect x="186" y="348" width="20" height="10" rx="3" fill="#004346"/>
+        </g>
+        <g transform="translate(60,372)">
+          <rect x="0" y="0" width="132" height="92" rx="8" fill="#172A3A" stroke="#E4F1F7" stroke-width="5"/>
+          <path d="M16 30 h60 M16 48 h92 M16 66 h44" stroke="#E4F1F7" stroke-width="5" stroke-linecap="round" opacity=".85"/>
+          <rect x="24" y="92" width="10" height="42" fill="#004346"/><rect x="98" y="92" width="10" height="42" fill="#004346"/>
+        </g>
+        <g transform="translate(300,362)">
+          <circle cx="0" cy="0" r="22" fill="#F2C49B"/>
+          <path d="M-23 -4 a23 23 0 0 1 46 0 l-6 -18 -34 -2 Z" fill="#3A2418"/>
+          <rect x="-20" y="24" width="40" height="62" rx="16" fill="#004346"/>
+          <path d="M18 34 q28 12 40 34" stroke="#F2C49B" stroke-width="13" fill="none" stroke-linecap="round"/>
+          <rect x="-16" y="84" width="14" height="46" rx="6" fill="#172A3A"/><rect x="4" y="84" width="14" height="46" rx="6" fill="#172A3A"/>
+        </g>
+        <g transform="translate(452,384)">
+          <circle cx="0" cy="0" r="19" fill="#C9885C"/>
+          <path d="M-20 -6 a20 20 0 0 1 40 0 z" fill="#241109"/>
+          <rect x="-17" y="20" width="34" height="46" rx="13" fill="#74B3CE"/>
+          <path d="M-14 30 q-22 10 -24 26" stroke="#C9885C" stroke-width="11" fill="none" stroke-linecap="round"/>
+          <rect x="-20" y="64" width="44" height="10" rx="5" fill="#508991"/>
+          <circle cx="-6" cy="94" r="26" fill="none" stroke="#EAEAEA" stroke-width="6"/>
+          <circle cx="-6" cy="94" r="8" fill="#EAEAEA"/>
+          <circle cx="26" cy="104" r="11" fill="none" stroke="#EAEAEA" stroke-width="5"/>
+          <path d="M18 62 l16 -18" stroke="#508991" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(520,420)">
+          <circle cx="0" cy="0" r="17" fill="#F2C49B"/>
+          <path d="M-18 -4 a18 18 0 0 1 36 0 z" fill="#5A3A1E"/>
+          <rect x="-16" y="18" width="32" height="34" rx="12" fill="#004346"/>
+          <rect x="-22" y="46" width="44" height="9" rx="4" fill="#0E1B26"/>
+          <rect x="-18" y="30" width="36" height="20" rx="4" fill="#E4F1F7" transform="rotate(-8)"/>
+        </g>
+        <g transform="translate(596,214)">
+          <rect x="-26" y="-20" width="52" height="40" rx="10" fill="#004346"/>
+          <path d="M-12 -4 h24 M-12 6 h16" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(120,232)">
+          <circle r="24" fill="#508991"/>
+          <path d="M-9 2 l7 8 12 -16" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="pill-fila">
+      <span class="pill">Duración: 20 minutos</span>
+      <span class="pill">Enfoque biopsicosocial</span>
+      <span class="pill">Refugios de emergencia</span>
+      <span class="pill">4 actividades interactivas</span>
+    </div>
+
+    <div class="fila">
+      <button class="btn amarillo" data-ir="1">Comenzar la microclase</button>
+      <button class="btn hueco" data-ir="3">Ir directo al cuestionario</button>
+    </div>
+
+    <div class="participantes">
+      <span class="mini">Participantes</span>
+      <div class="lista-part">
+        <span><b>Johanna Reinoso U.</b><i>C.I. 15.701.289</i></span>
+        <span><b>Carmen Yánez</b><i>C.I. 17.458.719</i></span>
+        <span><b>Helen Maimaragua</b><i>C.I. 26.946.186</i></span>
+        <span><b>Yesenia Ojeda</b><i>C.I. 32.695.165</i></span>
+      </div>
+      <p class="fecha">Caracas, agosto de 2026</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== 1 · NUBE DE PALABRAS ===== -->
+<section class="pantalla" id="p1">
+  <span class="eyebrow">Actividad 1 &middot; Inicio (3 min) &middot; Nube de palabras</span>
+  <h2>Mitos vs. realidad: la atención educativa en refugios</h2>
+  <p class="lead">¿Qué palabras se te vienen a la mente al pensar en enseñar a personas con discapacidad en un refugio? Escribe 3 palabras o frases cortas.</p>
+
+  <div class="entrada">
+    <input type="text" id="inputPalabra" placeholder="Escribe una palabra y presiona Enter..." maxlength="28" autocomplete="off">
+    <button class="btn azul" id="btnAgregar">Agregar palabra</button>
+  </div>
+
+  <div class="nube" id="nube"></div>
+
+  <div class="fila">
+    <button class="btn amarillo" id="btnAclarar">Ver el cierre y la aclaración en directo</button>
+    <button class="btn hueco" id="btnLimpiar">Limpiar la nube</button>
+    <button class="btn" data-ir="2">Continuar a la infografía</button>
+  </div>
+
+  <div class="aclara" id="aclaraciones" style="display:none">
+    <div class="tarjeta ok">
+      <span class="mini">Cierre en directo</span>
+      <h3>De la ayuda al derecho</h3>
+      <p>Al inicio pensamos en comida o refugio. El reto docente es garantizar la educación como un derecho, incluso en la emergencia.</p>
+    </div>
+    <div class="tarjeta">
+      <span class="mini">Si respondiste: comida &middot; ropa &middot; medicinas &middot; lástima &middot; cuidado</span>
+      <h3>Son insumos de supervivencia</h3>
+      <p>La educación es un derecho que no se pausa. Pasamos de dar ayuda básica a garantizar el aprendizaje.</p>
+    </div>
+    <div class="tarjeta">
+      <span class="mini">Si respondiste: no se puede enseñar allí &middot; esperar</span>
+      <h3>La educación no depende de cuatro paredes</h3>
+      <p>En la emergencia, mantener la rutina escolar protege la salud mental del estudiante.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 2 · INFOGRAFÍA ===== -->
+<section class="pantalla" id="p2">
+  <span class="eyebrow">Actividad 2 &middot; Desarrollo (10 min) &middot; Infografía interactiva</span>
+  <h2>Transformando espacios: el rol docente en aulas no convencionales</h2>
+  <p class="lead">Toca cada módulo para desplegar el contenido y la aclaración en directo.</p>
+
+  <div class="modulos">
+    <article class="modulo m1">
+      <span class="toque">TOCA AQUÍ</span>
+      <svg class="icono" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <path d="M12 44h40" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+        <path d="M20 44V26l12-12 12 12v18" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M32 30v10M27 35h10" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div class="num">MÓDULO 1</div>
+      <h3>Cambio de enfoque</h3>
+      <div class="detalle">
+        <p><strong>Enfoque médico (viejo):</strong> da solo comida y salud. Pausa la educación.</p>
+        <p style="margin-top:8px"><strong>Enfoque biopsicosocial (nuevo):</strong> adapta el entorno y mantiene la educación como un derecho continuo.</p>
+        <div class="tip">Aclaración en directo: aprender también es una necesidad básica en la crisis.</div>
+      </div>
+    </article>
+
+    <article class="modulo m2">
+      <span class="toque">TOCA AQUÍ</span>
+      <svg class="icono" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <circle cx="24" cy="20" r="8" stroke="#172A3A" stroke-width="4"/>
+        <circle cx="44" cy="30" r="6" stroke="#172A3A" stroke-width="4"/>
+        <path d="M10 48c0-8 6-12 14-12s14 4 14 12" stroke="#172A3A" stroke-width="4" stroke-linecap="round"/>
+        <path d="M40 48c0-6 4-9 9-9s9 3 9 9" stroke="#172A3A" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div class="num">MÓDULO 2</div>
+      <h3>Entorno y diversidad</h3>
+      <div class="detalle">
+        <p><strong>Más que movilidad:</strong> incluye necesidades emocionales, de comunicación y de aprendizaje.</p>
+        <p style="margin-top:8px"><strong>El espacio como barrera:</strong> si la carpa o el salón no se adaptan, el entorno limita al estudiante.</p>
+        <div class="tip">Aclaración en directo: inclusión no es solo poner una rampa, es adaptar la forma de enseñar.</div>
+      </div>
+    </article>
+
+    <article class="modulo m3">
+      <span class="toque">TOCA AQUÍ</span>
+      <svg class="icono" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <path d="M8 46 32 16l24 30z" stroke="#172A3A" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M32 30v16" stroke="#172A3A" stroke-width="4"/>
+        <circle cx="32" cy="24" r="3" fill="#172A3A"/>
+      </svg>
+      <div class="num">MÓDULO 3</div>
+      <h3>El docente en el espacio</h3>
+      <div class="detalle">
+        <p><strong>Adecuar:</strong> crear un rincón de aprendizaje seguro.</p>
+        <p style="margin-top:6px"><strong>Brindar calma:</strong> mantener rutinas para bajar la ansiedad.</p>
+        <p style="margin-top:6px"><strong>Acompañar:</strong> guiar individualmente en momentos de crisis o sobreestimulación.</p>
+        <div class="tip">El docente se convierte en gestor del ambiente de aprendizaje.</div>
+      </div>
+    </article>
+
+    <article class="modulo m4">
+      <span class="toque">TOCA AQUÍ</span>
+      <svg class="icono" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <path d="M6 46h52" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+        <path d="M14 46 32 18l18 28z" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M26 46l6-12 6 12" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+      </svg>
+      <div class="num">MÓDULO 4</div>
+      <h3>Experiencia en refugios</h3>
+      <div class="detalle">
+        <p><strong>Red comunitaria:</strong> trabajo en equipo entre familias, vecinos y docentes.</p>
+        <p style="margin-top:8px"><strong>Prioridad pedagógica:</strong> calma emocional, rutinas diarias y actividades adaptadas.</p>
+        <div class="tip">Aclaración en directo: la comunidad sostiene el aula cuando la escuela no está.</div>
+      </div>
+    </article>
+  </div>
+
+  <div class="fila">
+    <button class="btn amarillo" data-ir="3">Poner a prueba lo aprendido</button>
+  </div>
+</section>
+
+<!-- ===== 3 · CUESTIONARIO ===== -->
+<section class="pantalla" id="p3">
+  <div id="quizIntro">
+    <span class="eyebrow">Actividad 3 &middot; Aplicación (4 min) &middot; Cuestionario gamificado</span>
+    <h2>Evaluación de casos: decisiones pedagógicas en refugios</h2>
+    <p class="lead">8 escenarios reales. Tienes 20 segundos por pregunta: mientras más rápido respondas, más puntos ganas. Elige la estrategia que mejor gestiona un aula no convencional.</p>
+    <div class="fila"><button class="btn" id="btnIniciarQuiz">Empezar el cuestionario</button></div>
+  </div>
+
+  <div id="quizJuego" style="display:none">
+    <div class="barra-progreso"><span id="barra"></span></div>
+    <div class="cabeza-quiz">
+      <div class="contador" id="contador">20</div>
+      <div style="font-weight:800;font-size:14px;opacity:.9" id="numPregunta"></div>
+      <div class="marcador" id="marcador">0 pts</div>
+    </div>
+    <div class="pregunta" id="textoPregunta"></div>
+    <div class="opciones" id="opciones"></div>
+    <div class="veredicto" id="veredicto"></div>
+    <div class="fila" id="filaSiguiente" style="display:none">
+      <button class="btn amarillo" id="btnSiguientePregunta">Siguiente pregunta</button>
+    </div>
+  </div>
+
+  <div id="quizFin" style="display:none" class="podio">
+    <div class="medalla" id="medalla">&#127942;</div>
+    <h2 id="tituloFin"></h2>
+    <p class="lead" id="textoFin" style="margin:0 auto 8px"></p>
+    <div class="marcador" id="puntajeFinal" style="display:inline-block;margin-top:10px"></div>
+    <div class="fila" style="justify-content:center">
+      <button class="btn" data-ir="4">Ir al muro colaborativo</button>
+      <button class="btn hueco" id="btnReiniciarQuiz">Responder otra vez</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4 · MURAL ===== -->
+<section class="pantalla" id="p4">
+  <span class="eyebrow">Actividad 4 &middot; Cierre (3 min) &middot; Muro colaborativo</span>
+  <h2>Mis compromisos con la diversidad</h2>
+  <p class="lead">Publica tu reflexión en cada columna pensando en cómo la adaptación del plan de estudio y el superar el enfoque asistencial transforman tu rol docente en emergencias.</p>
+
+  <div class="columnas">
+    <div class="col c1">
+      <div class="col-cabeza">
+        <div class="col-num">1</div>
+        <h3><small>Columna 1</small>Mis compromisos docentes</h3>
+      </div>
+      <p class="consigna">Escribe tu compromiso personal para enseñar en espacios de emergencia e indica tu nombre al inicio.</p>
+      <div class="notas" id="notas1"></div>
+      <div class="form-nota">
+        <span class="etiqueta">Publica tu aporte</span>
+        <input type="text" id="nombre1" placeholder="Tu nombre" maxlength="40">
+        <textarea id="texto1" rows="3" placeholder="Mi compromiso es..."></textarea>
+        <button class="btn azul" data-publicar="1">Publicar en el muro</button>
+      </div>
+    </div>
+    <div class="col c2">
+      <div class="col-cabeza">
+        <div class="col-num">2</div>
+        <h3><small>Columna 2</small>Superando el enfoque asistencial</h3>
+      </div>
+      <p class="consigna">Explica cómo pasar del cuidado médico al modelo biopsicosocial en espacios alternativos (máximo 30 palabras).</p>
+      <div class="notas" id="notas2"></div>
+      <div class="form-nota">
+        <span class="etiqueta">Publica tu aporte</span>
+        <input type="text" id="nombre2" placeholder="Tu nombre" maxlength="40">
+        <textarea id="texto2" rows="3" placeholder="Pasar del cuidado a..."></textarea>
+        <button class="btn azul" data-publicar="2">Publicar en el muro</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fila"><button class="btn amarillo" data-ir="5">Ver el cierre de la microclase</button></div>
+</section>
+
+<!-- ===== 5 · CIERRE ===== -->
+<section class="pantalla" id="p5">
+  <span class="eyebrow">Cierre &middot; Metacognición</span>
+  <h2>La educación garantiza el futuro</h2>
+  <div class="cierre-caja">
+    <p class="cita">Para cerrar, recordemos que en una situación de emergencia, un plato de comida o una carpa garantizan la <span>supervivencia</span>, pero la educación garantiza el <span>futuro</span>. Nuestro rol como docentes gestores no es compadecernos de la crisis, sino transformar cualquier espacio improvisado en un entorno seguro donde la inclusión sea un derecho que <span>nunca se detenga</span>.</p>
+    <p class="lead" style="margin-top:16px">Muchas gracias a todos por su participación.</p>
+  </div>
+
+  <h3 class="subtitulo">Aspectos evaluativos
+    <small>Criterios con los que se valora el desempeño alcanzado en esta microclase.</small>
+  </h3>
+
+  <div class="aclara" style="margin-top:16px">
+    <div class="tarjeta ok"><span class="mini">Criterio 1</span><p>Comprende los principios de la educación no convencional en contextos de riesgo o desastre.</p></div>
+    <div class="tarjeta ok"><span class="mini">Criterio 2</span><p>Demuestra un enfoque biopsicosocial e inclusivo sobre la discapacidad.</p></div>
+    <div class="tarjeta ok"><span class="mini">Criterio 3</span><p>Propone soluciones coherentes para la gestión de ambientes de aprendizaje no convencionales.</p></div>
+  </div>
+
+  <div class="tarjeta" style="margin-top:22px">
+    <span class="mini">Referencias bibliográficas</span>
+    <p style="font-size:13.5px;line-height:1.7;opacity:.92">
+      Guía, S., &amp; Guzmán Guerra, W. (Comps.). (2018). <em>Discapacidad y Diversidad: Experiencias investigativas en la práctica docente</em>. CIES, Escuela de Educación, UCV. ISBN 978-980-00-2891-9.<br><br>
+      Noyola Guevara, E. (2018). Génesis del gestor de aprendizaje. Estudiantes y egresados de la Licenciatura en Educación Especial, Plan 2004 (pp. 32-59). CIES, UCV.<br><br>
+      Rumbos Ruiz, H. J., &amp; Tineo González, E. C. (2018). Aproximación a las representaciones sociales sobre la discapacidad: una visión desde el IPC (pp. 14-30). CIES, UCV.
+    </p>
+  </div>
+
+  <div class="fila"><button class="btn amarillo" data-ir="0">Volver al inicio</button></div>
+</section>
+
+</main>
+
+<div class="pie-nav">
+  <button class="nav-btn sec" id="btnAtras">&#9664; Atrás</button>
+  <small id="pieTexto">Microclase &middot; Educación y Espacios No Convencionales</small>
+  <button class="nav-btn" id="btnAdelante">Siguiente &#9654;</button>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ AUDIO ============ */
+var ctxAudio=null, sfxOn=true, musicaOn=false, musicaTimer=null, compas=0;
+function ac(){
+  try{
+    if(!ctxAudio){ var C=window.AudioContext||window.webkitAudioContext; if(!C) return null; ctxAudio=new C(); }
+    if(ctxAudio.state==="suspended") ctxAudio.resume();
+    return ctxAudio;
+  }catch(e){ return null; }
+}
+function nota(freq,inicio,dur,tipo,vol){
+  var a=ac(); if(!a) return;
+  try{
+    var t=a.currentTime+inicio, o=a.createOscillator(), g=a.createGain();
+    o.type=tipo||"square"; o.frequency.setValueAtTime(freq,t);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(vol||0.16,t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+dur+0.05);
+  }catch(e){}
+}
+function sfxClick(){ if(sfxOn) nota(660,0,.08,"triangle",.13); }
+function sfxPop(){ if(sfxOn){ nota(520,0,.07,"sine",.16); nota(780,.06,.1,"sine",.13);} }
+function sfxBien(){ if(sfxOn) [523,659,784,1047].forEach(function(f,i){ nota(f,i*.09,.22,"square",.16); }); }
+function sfxMal(){ if(sfxOn){ nota(311,0,.22,"sawtooth",.14); nota(233,.18,.34,"sawtooth",.14);} }
+function sfxTic(){ if(sfxOn) nota(1180,0,.04,"square",.07); }
+function sfxFin(){ if(sfxOn) [523,587,659,784,880,1047].forEach(function(f,i){ nota(f,i*.12,.3,"triangle",.16); }); }
+function sfxPasa(){ if(sfxOn){ nota(392,0,.09,"sine",.11); nota(587,.08,.14,"sine",.11);} }
+
+var BAJO=[131,131,175,196], MELO=[523,659,587,784,659,523,587,494];
+function loopMusica(){
+  var b=BAJO[compas%BAJO.length];
+  nota(b,0,.42,"triangle",.07); nota(b,.5,.42,"triangle",.06);
+  nota(MELO[(compas*2)%MELO.length],.02,.2,"square",.035);
+  nota(MELO[(compas*2+1)%MELO.length],.52,.2,"square",.035);
+  compas++;
+}
+var btnMusica=document.getElementById("btnMusica"), btnSfx=document.getElementById("btnSfx");
+btnMusica.addEventListener("click",function(){
+  musicaOn=!musicaOn; btnMusica.classList.toggle("off",!musicaOn);
+  if(musicaOn){ ac(); loopMusica(); musicaTimer=setInterval(loopMusica,1000); }
+  else if(musicaTimer){ clearInterval(musicaTimer); musicaTimer=null; }
+});
+btnSfx.addEventListener("click",function(){
+  sfxOn=!sfxOn; btnSfx.classList.toggle("off",!sfxOn); if(sfxOn) sfxClick();
+});
+
+/* ============ NAVEGACIÓN ============ */
+var NOMBRES=["Inicio","1 · Nube de palabras","2 · Infografía","3 · Cuestionario","4 · Muro","Cierre"];
+var paso=0;
+var pasosBox=document.getElementById("pasos");
+NOMBRES.forEach(function(n,i){
+  var b=document.createElement("button");
+  b.className="paso"; b.type="button"; b.textContent=n;
+  b.addEventListener("click",function(){ ir(i); });
+  pasosBox.appendChild(b);
+});
+function ir(i){
+  paso=i; pararReloj();
+  var pantallas=document.querySelectorAll(".pantalla");
+  for(var k=0;k<pantallas.length;k++){ pantallas[k].classList.toggle("activa",k===i); }
+  var tabs=document.querySelectorAll(".paso");
+  for(var j=0;j<tabs.length;j++){ tabs[j].classList.toggle("on",j===i); }
+  document.getElementById("pieTexto").textContent=NOMBRES[i]+" · Microclase 20 min";
+  window.scrollTo(0,0);
+  sfxPasa();
+}
+document.getElementById("btnAtras").addEventListener("click",function(){ if(paso>0) ir(paso-1); });
+document.getElementById("btnAdelante").addEventListener("click",function(){ if(paso<NOMBRES.length-1) ir(paso+1); });
+
+/* botones con data-ir */
+var irBtns=document.querySelectorAll("[data-ir]");
+for(var q=0;q<irBtns.length;q++){
+  (function(btn){
+    btn.addEventListener("click",function(){ ir(parseInt(btn.getAttribute("data-ir"),10)); });
+  })(irBtns[q]);
+}
+
+/* ============ NUBE DE PALABRAS ============ */
+var COLORES=["#74B3CE","#09BC8A","#E4F1F7","#A9D8DE","#B8F2DF","#8FC9DD","#5FD9B5"];
+var SEMILLAS=["comida","refugio","cuidado","ayuda","carpa","rutina","calma","inclusión","derecho","adaptar","familia","aprender"];
+var nube=document.getElementById("nube"), inputP=document.getElementById("inputPalabra");
+
+function pintarPalabra(txt,destacada){
+  var s=document.createElement("span");
+  s.className="palabra"; s.textContent=txt;
+  s.style.fontSize=(destacada?(30+Math.random()*22):(17+Math.random()*20)).toFixed(0)+"px";
+  s.style.color=destacada?"#FFFFFF":COLORES[Math.floor(Math.random()*COLORES.length)];
+  s.style.transform="rotate("+((Math.random()*14)-7).toFixed(1)+"deg)";
+  if(destacada) s.style.textShadow="0 0 18px #09BC8A, 0 3px 0 rgba(0,0,0,.4)";
+  nube.appendChild(s);
+}
+SEMILLAS.forEach(function(p){ pintarPalabra(p,false); });
+
+var MITO_A=["comida","ropa","medicina","lástima","lastima","cuidado","alimento","agua","pena"];
+var MITO_B=["no se puede","imposible","esperar","nada","difícil","dificil","suspender","cerrar"];
+function coincide(lista,low){ for(var i=0;i<lista.length;i++){ if(low.indexOf(lista[i])>=0) return true; } return false; }
+
+function agregarPalabra(){
+  var v=inputP.value.trim(); if(!v) return;
+  pintarPalabra(v,true); sfxPop(); lanzarConfeti(12); inputP.value="";
+  var low=v.toLowerCase();
+  if(coincide(MITO_A,low)) avisar("Eso es un insumo de supervivencia. La educación es un derecho que no se pausa: pasamos de dar ayuda básica a garantizar el aprendizaje.");
+  else if(coincide(MITO_B,low)) avisar("La educación no depende de un aula de cuatro paredes. En la emergencia, mantener la rutina escolar protege la salud mental.");
+}
+function avisar(txt){
+  var caja=document.getElementById("aclaraciones");
+  caja.style.display="grid";
+  var t=document.createElement("div");
+  t.className="tarjeta"; t.style.gridColumn="1 / -1"; t.style.borderLeftColor="#09BC8A";
+  var m=document.createElement("span"); m.className="mini"; m.textContent="Aclaración en directo";
+  var p=document.createElement("p"); p.textContent=txt;
+  t.appendChild(m); t.appendChild(p); caja.insertBefore(t,caja.firstChild);
+}
+document.getElementById("btnAgregar").addEventListener("click",agregarPalabra);
+inputP.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.keyCode===13){ e.preventDefault(); agregarPalabra(); } });
+document.getElementById("btnAclarar").addEventListener("click",function(){
+  document.getElementById("aclaraciones").style.display="grid"; sfxBien();
+});
+document.getElementById("btnLimpiar").addEventListener("click",function(){
+  nube.innerHTML=""; SEMILLAS.forEach(function(p){ pintarPalabra(p,false); }); sfxClick();
+});
+
+/* ============ INFOGRAFÍA ============ */
+var modulos=document.querySelectorAll(".modulo");
+for(var mm=0;mm<modulos.length;mm++){
+  (function(el){
+    el.addEventListener("click",function(){ el.classList.toggle("abierto"); sfxClick(); });
+  })(modulos[mm]);
+}
+
+/* ============ CUESTIONARIO ============ */
+var PREGUNTAS=[
+{q:"En un refugio lleno de gente, ¿cómo atiendes mejor a un estudiante con discapacidad desde el enfoque biopsicosocial?",
+ o:["Lo llevas a un lugar aislado fuera del refugio para atenderlo solo a él",
+    "Adaptas el plan de clase y reorganizas el espacio del refugio para que participe y se relacione con los demás",
+    "Te limitas a cuidarlo y protegerlo mientras abren de nuevo la escuela",
+    "Das la clase exactamente igual que en el aula regular, sin hacer ningún cambio"],
+ c:1, fb:"El enfoque biopsicosocial adapta el entorno, no aísla al estudiante: participar y relacionarse también es aprender."},
+{q:"Si notas que el espacio del refugio frena el aprendizaje del estudiante, ¿qué acción demuestra un liderazgo adaptativo?",
+ o:["Usas tu creatividad para adaptar los recursos del lugar y garantizas su derecho a aprender",
+    "Suspendes las clases hasta tener un aula equipada y materiales especiales",
+    "Te enfocas solo en sus limitaciones físicas o de salud",
+    "Le dejas la responsabilidad a sus familiares sin darle apoyo pedagógico"],
+ c:0, fb:"El docente gestor supera el enfoque asistencial: usa lo que hay en el lugar y sostiene el derecho a aprender."},
+{q:"¿Qué caracteriza al viejo enfoque médico o asistencialista en una emergencia?",
+ o:["Adapta el entorno para que el estudiante participe",
+    "Da solo comida y salud, y pausa la educación",
+    "Mantiene rutinas escolares diarias",
+    "Trabaja en red con familias y vecinos"],
+ c:1, fb:"El enfoque médico atiende la supervivencia y detiene la escolaridad. Aprender también es una necesidad básica en la crisis."},
+{q:"Según el modelo biopsicosocial, ¿dónde está principalmente la barrera que limita al estudiante?",
+ o:["En el diagnóstico médico del estudiante",
+    "En la falta de voluntad de la familia",
+    "En el entorno que no se adapta a sus necesidades",
+    "En la ausencia de materiales importados"],
+ c:2, fb:"Si la carpa o el salón no se adaptan, es el entorno el que limita. Por eso se interviene el espacio y la forma de enseñar."},
+{q:"La diversidad en un refugio va más allá de la movilidad. ¿Qué otras necesidades debe considerar el docente?",
+ o:["Solo las necesidades físicas y de salud",
+    "Únicamente las necesidades alimentarias",
+    "Las emocionales, de comunicación y de aprendizaje",
+    "Ninguna: en emergencia todos aprenden igual"],
+ c:2, fb:"Inclusión no es solo poner una rampa: es adaptar la comunicación, el apoyo emocional y la enseñanza."},
+{q:"Un estudiante presenta sobreestimulación por el ruido y la multitud del refugio. ¿Qué hace el docente gestor?",
+ o:["Crea un rincón de aprendizaje seguro y lo acompaña individualmente para brindarle calma",
+    "Lo saca del refugio hasta que se calme solo",
+    "Cancela la actividad de todo el grupo",
+    "Le pide a la familia que lo mantenga apartado todo el día"],
+ c:0, fb:"Adecuar, brindar calma y acompañar son las tres acciones del docente en el espacio no convencional."},
+{q:"¿Por qué mantener la rutina escolar es una prioridad pedagógica dentro del refugio?",
+ o:["Porque permite cumplir con el horario administrativo",
+    "Porque baja la ansiedad y protege la salud mental del estudiante",
+    "Porque evita que la comunidad participe",
+    "Porque sustituye la atención emocional"],
+ c:1, fb:"La rutina da previsibilidad y seguridad: es contención emocional además de continuidad educativa."},
+{q:"En la experiencia de refugios, ¿quiénes conforman la red comunitaria que sostiene la respuesta educativa?",
+ o:["Solo los docentes de la escuela más cercana",
+    "Solo el personal médico del refugio",
+    "Familias, vecinos y docentes trabajando en equipo",
+    "Únicamente las autoridades nacionales"],
+ c:2, fb:"La red comunitaria sostiene el aula cuando la escuela no está: familias, vecinos y docentes comparten la tarea."}
+];
+
+var FIGURAS=[
+ '<svg class="fig" viewBox="0 0 40 40"><path d="M20 4 36 34H4z" fill="#E4F1F7"/></svg>',
+ '<svg class="fig" viewBox="0 0 40 40"><path d="M20 3 37 20 20 37 3 20z" fill="#E4F1F7"/></svg>',
+ '<svg class="fig" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#E4F1F7"/></svg>',
+ '<svg class="fig" viewBox="0 0 40 40"><rect x="5" y="5" width="30" height="30" rx="4" fill="#172A3A"/></svg>'
+];
+
+var TIEMPO=20, iPregunta=0, puntos=0, reloj=null, restante=TIEMPO, bloqueado=false;
+
+function iniciarQuiz(){
+  ac(); iPregunta=0; puntos=0;
+  document.getElementById("quizIntro").style.display="none";
+  document.getElementById("quizFin").style.display="none";
+  document.getElementById("quizJuego").style.display="block";
+  if(paso!==3) ir(3);
+  mostrarPregunta();
+}
+function mostrarPregunta(){
+  bloqueado=false; restante=TIEMPO;
+  var p=PREGUNTAS[iPregunta];
+  document.getElementById("numPregunta").textContent="Pregunta "+(iPregunta+1)+" de "+PREGUNTAS.length;
+  document.getElementById("marcador").textContent=puntos+" pts";
+  document.getElementById("textoPregunta").textContent=p.q;
+  document.getElementById("barra").style.width=(iPregunta/PREGUNTAS.length*100)+"%";
+  var cont=document.getElementById("opciones"); cont.innerHTML="";
+  p.o.forEach(function(txt,k){
+    var b=document.createElement("button");
+    b.type="button"; b.className="opcion o"+k;
+    b.innerHTML=FIGURAS[k]+"<span>"+txt+"</span>";
+    b.addEventListener("click",function(){ responder(k); });
+    cont.appendChild(b);
+  });
+  var v=document.getElementById("veredicto"); v.className="veredicto"; v.innerHTML="";
+  document.getElementById("filaSiguiente").style.display="none";
+  arrancarReloj();
+}
+function arrancarReloj(){
+  pararReloj();
+  var el=document.getElementById("contador");
+  el.textContent=restante; el.classList.remove("urgente");
+  reloj=setInterval(function(){
+    restante--;
+    el.textContent=(restante>0?restante:0);
+    if(restante<=5){ el.classList.add("urgente"); sfxTic(); }
+    if(restante<=0) responder(-1);
+  },1000);
+}
+function pararReloj(){ if(reloj){ clearInterval(reloj); reloj=null; } }
+
+function responder(elegida){
+  if(bloqueado) return;
+  bloqueado=true; pararReloj();
+  var p=PREGUNTAS[iPregunta];
+  var acierto=(elegida===p.c);
+  var ganados=acierto?(500+Math.round(500*(Math.max(restante,0)/TIEMPO))):0;
+  puntos+=ganados;
+  var botones=document.querySelectorAll("#opciones .opcion");
+  for(var k=0;k<botones.length;k++){
+    if(k===p.c) botones[k].classList.add("correcta"); else botones[k].classList.add("incorrecta");
+    if(k===elegida && k!==p.c) botones[k].classList.add("elegida");
+    botones[k].disabled=true;
+  }
+  var v=document.getElementById("veredicto");
+  v.className="veredicto ver "+(acierto?"bien":"mal");
+  if(acierto){ v.innerHTML="<strong>¡Correcto! +"+ganados+" pts</strong>"+p.fb; sfxBien(); lanzarConfeti(70); }
+  else if(elegida===-1){ v.innerHTML="<strong>¡Se acabó el tiempo!</strong>La correcta era: <em>"+p.o[p.c]+"</em>. "+p.fb; sfxMal(); }
+  else { v.innerHTML="<strong>Respuesta incorrecta</strong>La correcta era: <em>"+p.o[p.c]+"</em>. "+p.fb; sfxMal(); }
+  document.getElementById("marcador").textContent=puntos+" pts";
+  document.getElementById("barra").style.width=((iPregunta+1)/PREGUNTAS.length*100)+"%";
+  document.getElementById("filaSiguiente").style.display="flex";
+  document.getElementById("btnSiguientePregunta").textContent=(iPregunta<PREGUNTAS.length-1)?"Siguiente pregunta":"Ver resultado";
+}
+function finQuiz(){
+  pararReloj();
+  document.getElementById("quizJuego").style.display="none";
+  document.getElementById("quizFin").style.display="block";
+  var max=PREGUNTAS.length*1000, pct=puntos/max;
+  var med="\uD83C\uDF96\uFE0F", tit="Docente en formación",
+      txt="Repasa los módulos de la infografía: el paso del enfoque médico al biopsicosocial es la clave de toda la microclase.";
+  if(pct>=.8){ med="\uD83C\uDFC6"; tit="¡Docente gestor de ambientes!";
+    txt="Dominas la adecuación del espacio, la calma emocional y la garantía del derecho a aprender en la emergencia."; }
+  else if(pct>=.5){ med="\uD83E\uDD48"; tit="Buen camino hacia la inclusión";
+    txt="Reconoces el enfoque biopsicosocial. Refuerza el rol del docente como gestor del espacio y de la red comunitaria."; }
+  document.getElementById("medalla").textContent=med;
+  document.getElementById("tituloFin").textContent=tit;
+  document.getElementById("textoFin").textContent=txt;
+  document.getElementById("puntajeFinal").textContent=puntos+" pts de "+max;
+  sfxFin(); lanzarConfeti(180);
+}
+document.getElementById("btnIniciarQuiz").addEventListener("click",iniciarQuiz);
+document.getElementById("btnReiniciarQuiz").addEventListener("click",iniciarQuiz);
+document.getElementById("btnSiguientePregunta").addEventListener("click",function(){
+  if(iPregunta<PREGUNTAS.length-1){ iPregunta++; mostrarPregunta(); } else finQuiz();
+});
+
+/* ============ MURAL ============ */
+var COLORES_NOTA=["#E4F1F7","#DCEEF4"];
+function nuevaNota(cont,nombre,texto){
+  var d=document.createElement("div");
+  d.className="nota";
+  d.style.background=COLORES_NOTA[cont.children.length%COLORES_NOTA.length];
+  var b=document.createElement("b"); b.textContent=nombre;
+  var s=document.createElement("span"); s.textContent=texto;
+  d.appendChild(b); d.appendChild(s); cont.appendChild(d);
+}
+nuevaNota(document.getElementById("notas1"),"Ejemplo","Mi compromiso es adaptar mis clases viendo la diversidad como una oportunidad y no como un obstáculo.");
+nuevaNota(document.getElementById("notas1"),"Ejemplo","Diseñaré actividades adaptables para asegurar que mis estudiantes sigan aprendiendo en cualquier contingencia.");
+nuevaNota(document.getElementById("notas2"),"Ejemplo","Pasar del simple cuidado a impulsar la autonomía del estudiante, eliminando las barreras del entorno.");
+nuevaNota(document.getElementById("notas2"),"Ejemplo","Garantizar una educación integral viendo al estudiante desde su lado biológico, psicológico y social.");
+
+var pubBtns=document.querySelectorAll("[data-publicar]");
+for(var pb=0;pb<pubBtns.length;pb++){
+  (function(btn){
+    var col=btn.getAttribute("data-publicar");
+    btn.addEventListener("click",function(){
+      var nom=document.getElementById("nombre"+col), txt=document.getElementById("texto"+col);
+      var t=txt.value.trim();
+      if(!t){ txt.focus(); return; }
+      nuevaNota(document.getElementById("notas"+col), nom.value.trim()||"Participante", t);
+      txt.value=""; sfxPop(); lanzarConfeti(30);
+    });
+  })(pubBtns[pb]);
+}
+
+/* ============ CONFETI ============ */
+var cv=document.getElementById("confeti"), cx=cv.getContext("2d"), trozos=[];
+function ajustar(){ cv.width=window.innerWidth; cv.height=window.innerHeight; }
+window.addEventListener("resize",ajustar); ajustar();
+function lanzarConfeti(n){
+  var cols=["#74B3CE","#09BC8A","#508991","#E4F1F7","#B8F2DF","#FFFFFF"];
+  for(var i=0;i<n;i++){
+    trozos.push({x:Math.random()*cv.width,y:-20-Math.random()*140,w:6+Math.random()*8,h:8+Math.random()*10,
+      vy:2.5+Math.random()*4,vx:(Math.random()-.5)*2.6,r:Math.random()*6,vr:(Math.random()-.5)*.32,
+      c:cols[Math.floor(Math.random()*cols.length)]});
+  }
+}
+function animar(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  trozos=trozos.filter(function(t){ return t.y<cv.height+40; });
+  trozos.forEach(function(t){
+    t.x+=t.vx; t.y+=t.vy; t.r+=t.vr;
+    cx.save(); cx.translate(t.x,t.y); cx.rotate(t.r);
+    cx.fillStyle=t.c; cx.fillRect(-t.w/2,-t.h/2,t.w,t.h); cx.restore();
+  });
+  requestAnimationFrame(animar);
+}
+animar();
+
+/* ============ TECLADO ============ */
+document.addEventListener("keydown",function(e){
+  var tag=(e.target&&e.target.tagName)||"";
+  if(tag==="INPUT"||tag==="TEXTAREA") return;
+  if(paso===3 && !bloqueado && document.getElementById("quizJuego").style.display==="block"){
+    var k=parseInt(e.key,10);
+    if(k>=1&&k<=4){ var b=document.querySelectorAll("#opciones .opcion")[k-1]; if(b&&!b.disabled) b.click(); }
+  }
+  if(e.key==="ArrowRight" && paso<NOMBRES.length-1) ir(paso+1);
+  if(e.key==="ArrowLeft" && paso>0) ir(paso-1);
+});
+
+ir(0);
+})();
+</script>
+</body>
+</html>
